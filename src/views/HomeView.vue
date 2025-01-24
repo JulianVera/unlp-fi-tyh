@@ -1,9 +1,9 @@
 <script setup>
-// import TheWelcome from '../components/TheWelcome.vue'
+import Schedule from '../components/Schedule.vue'
 </script>
 
 <template>
-  <main>
-    <!-- <TheWelcome /> -->
-  </main>
+  <div class="flex pt-16 w-dvw">
+    <Schedule></Schedule>
+  </div>
 </template>

@@ -1,19 +1,23 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
+import navComponent from './components/navComponent.vue'
+
+
 </script>
 
 <template>
     
-    <nav class="flex w-full justify-between items-center">
-      <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="60" height="32" />
-      <RouterLink to="/">Home</RouterLink>
-      <RouterLink to="/about">About</RouterLink>
-    </nav>
-    <main>
+    <navComponent></navComponent>
+    <main class="">
       <RouterView />
+      <!-- <menu-icon /> -->
     </main>
 
 </template>
 
 <style>
+main{
+  display: flex;
+  width: 100%;
+}
 </style>

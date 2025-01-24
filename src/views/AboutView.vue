@@ -2,5 +2,5 @@
   
 </template>
 
-<style lang="sass" scoped>
+<style scoped>
 </style>
