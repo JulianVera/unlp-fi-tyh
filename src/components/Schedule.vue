@@ -1,56 +1,48 @@
 <template>
-  <!-- basado en la idea de https://codepen.io/kjellmf/pen/qgxyVJ -->
-  <div class="containerGrid relative h-dvh overflow-auto w-full">
-    <div class="days h-12">
-      <div class="filler"></div>
-      <div class="filler"></div>
-      <div class="day">
+  <div class="schedule-grid">
+    <div class="schedule-grid__header">
+      <div class="schedule-grid__menu">
+        <IconMenu />
+      </div>
+      <div
+        class="schedule-grid__court"
+        v-for="(court, index) in courts"
+        :key="index"
+      >
         <IconCancha />
+        <div class="schedule-grid__court-info">
+          <span>{{ court.name }}</span>
+          <p>{{ court.type }}</p>
+        </div>
       </div>
-      <div class="day">Tue 5</div>
-      <div class="day">Wed 6</div>
-      <div class="day">Thu 7</div>
-      <div class="day current">Fri 8</div>
-      <div class="day">Sat 9</div>
-      <div class="day">Sun 10</div>
     </div>
-    <div class="content">
-      <div 
-        v-for="(val, index) in timeSlots" 
-        :key="index" 
-        :style="{ gridRow: index + 1 }" 
-        class="time">
-        {{ val }}:00
-      </div>
-      <div class="filler-col"></div>
 
-      <!-- Columns -->
-      <div 
-        v-for="n in 5" 
-        :key="'col-' + n" 
-        :style="{ gridColumn: n + 2 }" 
-        class="col">
-      </div>
-      <div class="col weekend" :style="{ gridColumn: 8 }"></div>
-      <div class="col weekend" :style="{ gridColumn: 9 }"></div>
-      <account-circle-icon :size="32"/>
-
-      <!-- Rows -->
-      <div 
-        v-for="n in 23" 
-        :key="'row-' + n" 
-        :style="{ gridRow: n }" 
-        class="row">
+    <div class="schedule-grid__content">
+      <!-- Columna de horarios -->
+      <div class="schedule-grid__times">
+        <div
+          v-for="(slot, index) in timeSlots"
+          :key="index"
+          class="schedule-grid__time"
+        >
+          {{ formatHour(slot) }}
+        </div>
       </div>
 
-      <!-- Events -->
-      <div class="event event1 calendar1">Event 1</div>
-      <div class="event event2 calendar2">Event 2</div>
-      <div class="event event3 calendar2">Event 3</div>
-      <div class="event event4 calendar1">Event 4</div>
-
-      <div class="current-time">
-        <div class="circle"></div>
+      <!-- Columnas de canchas -->
+      <div class="schedule-grid__columns">
+        <div
+          class="schedule-grid__column"
+          v-for="(court, index) in courts"
+          :key="index"
+        >
+          <div
+            v-for="(slot, slotIndex) in timeSlots"
+            :key="slotIndex"
+            class="schedule-grid__cell"
+            :class="{ 'schedule-grid__cell--hour': slot.endsWith(':00') }"
+          ></div>
+        </div>
       </div>
     </div>
   </div>
@@ -58,162 +50,129 @@
 
 <script>
 import IconCancha from './icons/iconCancha.vue';
+import IconMenu from './icons/IconMenu.vue';
 
 export default {
   components: {
     IconCancha,
+    IconMenu,
   },
   data() {
     return {
-      timeSlots: [
-        '01', '02', '03', '04', '05', '06', '07', '08', '09', '10',
-        '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
-        '21', '22', '23'
-      ]
+      courts: [
+        { name: 'Cancha 1', type: 'Cancha de pasto' },
+        { name: 'Cancha 2', type: 'Cancha de pasto' },
+        { name: 'Cancha 1', type: 'Cancha de ladrillo' },
+      ],
+      timeSlots: [],
     };
+  },
+  mounted() {
+    this.timeSlots = this.generateTimeSlots();
+  },
+  methods: {
+    generateTimeSlots() {
+      let slots = [];
+      for (let hour = 7; hour <= 23; hour++) {
+        slots.push(`${hour.toString().padStart(2, '0')}:00`);
+      }
+      return slots;
+    },
+    formatHour(time) {
+      let [hour] = time.split(":");
+      let hourInt = parseInt(hour, 10);
+      let period = hourInt >= 12 ? "PM" : "AM";
+      let formattedHour = hourInt % 12 || 12;
+      return `${formattedHour} ${period}`;
+    }
   }
 };
 </script>
 
 <style scoped lang="scss">
-$title-height: 3em;
-$days-height: 3em;
-$time-width: 3em;
-$time-height: 3em;
 $grid-color: #dadce0;
-$calendar-template: $time-width 10px repeat(7, 1fr);
-$current-time-color: #ea4335;
 
-* {
-  box-sizing: border-box;
-}
-
-body {
-  background: #fff;
-}
-
-.containerGrid {
+.schedule-grid {
   width: 100%;
-  display: grid;
-  grid-template-rows: $title-height $days-height auto;
-  // position: absolute;
-}
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
 
-.days {
-  background: #f3f2f1;
-  display: grid;
-  place-content: center;
-  text-align: center;
-  grid-template-columns: $calendar-template;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  border-bottom: 2px solid $grid-color;
-}
+  &__header {
+    background: #f3f2f1;
+    display: flex;
+    position: sticky;
+    width: 100%;
+    top: 0;
+    z-index: 10;
+    border-bottom: 2px solid $grid-color;
+  }
 
-.day {
-  border-left: 1px solid $grid-color;
-  height: 48px;
-}
+  &__menu {
+    width: 3.5rem;
+  }
 
-.content {
-  display: grid;
-  grid-template-columns: $calendar-template;
-  grid-template-rows: repeat(24, $time-height);
-}
+  &__court {
+    display: flex;
+    height: 72px;
+    text-align: left;
+    gap: 1rem;
+    padding: 0 1rem;
+    min-width: 240px;
+    align-items: center;
+  }
 
-.time {
-  grid-column: 1;
-  text-align: right;
-  align-self: end;
-  font-size: 80%;
-  position: relative;
-  bottom: -1ex;
-  color: #70757a;
-  padding-right: 2px;
-}
+  &__court-info {
+    width: 100%;
+    p {
+      font-size: 0.8rem;
+    }
+  }
 
-.col {
-  border-right: 1px solid $grid-color;
-  grid-row: 1 / span 24;
-  grid-column: span 1;
-}
+  &__content {
+    display: flex;
+  }
 
-.filler-col {
-  grid-row: 1 / -1;
-  grid-column: 2;
-  border-right: 1px solid $grid-color;
-}
+  &__times {
+    width: 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-right: 0.5rem;
+    text-align: right;
+  }
 
-.row {
-  grid-column: 2 / -1;
-  border-bottom: 1px solid $grid-color;
-}
+  &__time {
+    font-size: 1rem;
+    color: #ccc;
+    border-bottom: 1px solid #444;
+    height: 4rem;
+    line-height: 4rem;
+  }
 
-.event {
-  border-radius: 5px;
-  padding: 5px;
-  margin-right: 10px;
-  font-weight: bold;
-  font-size: 80%;
-}
+  &__columns {
+    display: flex;
+    flex-grow: 1;
+  }
 
-.weekend {
-  background-color: #f1f3f4;
-  // display: none;
-}
+  &__column {
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
+  }
 
-.calendar1 {
-  background-color: #d7dbef;
-  border-color: #bcc3e5;
-}
+  &__cell {
+    height: 4rem;
+    border-bottom: 1px solid #ccc;
 
-.calendar2 {
-  background-color: #b3e1f7;
-  border-color: #81cdf2;
-}
+    &--hour {
+      border-bottom: 2px solid #ccc;
+      height: 4rem;
+    }
 
-.event1 {
-  grid-column: 3;
-  grid-row: 9 / span 4;
+    &:hover {
+      background-color: rgba(0, 123, 255, 0.1);
+    }
+  }
 }
-
-.event2 {
-  grid-column: 5;
-  grid-row: 10 / span 6;
-}
-
-.event3 {
-  grid-column: 7;
-  grid-row: 8 / span 10;
-}
-
-.event4 {
-  grid-column: 8;
-  grid-row: 21 / span 2;
-}
-
-.current-time {
-  grid-column: 7;
-  grid-row: 10;
-  border-top: 2px solid $current-time-color;
-  position: relative;
-  top: calc(50% - 1px);
-}
-
-.circle {
-  width: 12px;
-  height: 12px;
-  border: 1px solid $current-time-color;
-  border-radius: 50%;
-  background: $current-time-color;
-  position: relative;
-  top: -6px;
-  left: -6px;
-}
-
-.current {
-  font-weight: bold;
-}
-
 </style>
