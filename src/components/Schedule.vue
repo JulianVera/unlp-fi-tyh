@@ -73,7 +73,9 @@ export default {
       courts: [
         { name: 'Cancha 1', type: 'Cancha de pasto' },
         { name: 'Cancha 2', type: 'Cancha de pasto' },
-        { name: 'Cancha 1', type: 'Cancha de ladrillo' },
+        { name: 'Cancha 3', type: 'Cancha de ladrillo' },
+        { name: 'Cancha 4', type: 'Cancha de paddle' },
+        { name: 'Cancha 5', type: 'Cancha de paddle' },
       ],
       timeSlots: [],
       hoveredTimeSlot: null,
@@ -123,24 +125,30 @@ $grid-color: #dadce0;
   flex-direction: column;
   overflow: auto;
   border-left: 1px solid #c0dec4;
+  overflow-x: auto;
+  padding-left: 5rem;
 }
 
 .schedule__header {
   background: #eef6ef;
   display: flex;
-  position: fixed;
-  width: 100%;
-  top: 4rem;
-  left: 5rem;
+  // position: fixed;
+  width: fit-content;
+  // top: 4rem;
+  // left: 5rem;
   z-index: 10;
   border-bottom: 2px solid $grid-color;
 }
 
 .schedule__menu {
-  width: 5rem;
+  min-width: 5rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: sticky;
+  left: 0;
+  border-right: 1px solid #ccc;
+  background-color: #eef6ef;
 }
 
 .schedule__court {
@@ -151,21 +159,24 @@ $grid-color: #dadce0;
   padding: 0 1rem;
   min-width: 250px;
   align-items: center;
-  border-left: 1px solid #c0dec4;
+  border-right: 1px solid #c0dec4;
 }
 
 .schedule__content {
   display: flex;
-  padding-left: 5rem;
 }
 
 .schedule__times {
-  width: 5rem;
+  min-width: 5rem;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   padding-right: 0.5rem;
   text-align: right;
+  position: sticky;
+  left: 0;
+  background: var(--primary);
+  border-right: 1px solid #ccc;
 }
 
 .schedule__times,
@@ -220,7 +231,7 @@ $grid-color: #dadce0;
 .schedule__column {
   min-width: 250px;
   display: flex;
-  border-left: 1px solid #969696;
+  border-right: 1px solid #969696;
   flex-direction: column;
 }
 

@@ -2,20 +2,13 @@
   <nav
     class="flex w-full justify-between items-center h-16 fixed top-0 z-50 left-20"
   >
-    <div class="flex items-center">
+    <div class="flex items-center gap-4">
       <div class="flex items-center">
         <div class="w-20 items-center justify-center flex">
-          <img
-            alt="Vue logo"
-            class="logo"
-            src="@/assets/logo.svg"
-            width="32"
-            height="32"
-          />
+          <menu-icon :size="32" />
         </div>
-        <AccountGroupOutline-icon :size="32" />
       </div>
-      <div class="flex items-center px-4">
+      <div class="flex items-center">
         <button
           type="button"
           class="py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-transparent rounded-full border border-gray-200 hover:bg-gray-100 hover:text-dark-700 focus:z-10 focus:ring-4 focus:ring-gray-100"
