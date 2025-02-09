@@ -1,15 +1,19 @@
 <template>
-  <nav class="flex w-full justify-between items-center h-16 fixed top-0 z-50">
+  <nav
+    class="flex w-full justify-between items-center h-16 fixed top-0 z-50 left-20"
+  >
     <div class="flex items-center">
       <div class="flex items-center">
-        <menu-icon :size="32" />
-        <img
-          alt="Vue logo"
-          class="logo"
-          src="@/assets/logo.svg"
-          width="32"
-          height="32"
-        />
+        <div class="w-20 items-center justify-center flex">
+          <img
+            alt="Vue logo"
+            class="logo"
+            src="@/assets/logo.svg"
+            width="32"
+            height="32"
+          />
+        </div>
+        <AccountGroupOutline-icon :size="32" />
       </div>
       <div class="flex items-center px-4">
         <button

@@ -2,10 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
-:root{
-  --primary: #F3FFF2;
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300..900&display=swap');
+
+:root {
+  --primary: #f3fff2;
+  font-family: 'Rubik', serif;
 }
 
-body{
+body {
   background-color: var(--primary);
+}
+
+.rubik-<uniquifier > {
+  font-family: 'Rubik', serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
 }

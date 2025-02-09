@@ -1,32 +1,34 @@
 <template>
-  <div class="schedule-grid">
-    <div class="schedule-grid__header">
-      <div class="schedule-grid__menu">
-        <IconMenu />
+  <div class="schedule">
+    <div class="schedule__header">
+      <div class="schedule__menu">
+        <button class="FAB">
+          <plus-icon :size="32" />
+        </button>
       </div>
       <div
-        class="schedule-grid__court"
+        class="schedule__court"
         v-for="(court, index) in courts"
         :key="index"
       >
         <IconCancha />
-        <div class="schedule-grid__court-info">
-          <span>{{ court.name }}</span>
+        <div class="schedule__court-info">
+          <span class="font-bold">{{ court.name }}</span>
           <p class="text-xs">{{ court.type }}</p>
         </div>
       </div>
     </div>
 
-    <div class="schedule-grid__content">
+    <div class="schedule__content">
       <!-- Columna de horarios -->
-      <div class="schedule-grid__times">
+      <div class="schedule__times">
         <div
           v-for="(timeSlot, index) in timeSlots"
           :key="index"
-          class="schedule-grid__time"
+          class="schedule__time"
           :class="{
-            'schedule-grid__time--hidden': !timeSlot.endsWith(':00'),
-            'schedule-grid__time--hover': isHovered,
+            'schedule__time--hidden': !timeSlot.endsWith(':00'),
+            'schedule__time--hover': isHovered,
           }"
         >
           <span>{{ formatHour(timeSlot) }}</span>
@@ -34,19 +36,19 @@
       </div>
 
       <!-- Columnas de canchas -->
-      <div class="schedule-grid__columns">
+      <div class="schedule__columns">
         <div
-          class="schedule-grid__column"
+          class="schedule__column"
           v-for="(court, index) in courts"
           :key="index"
         >
           <div
             v-for="(timeSlot, slotIndex) in timeSlots"
             :key="slotIndex"
-            class="schedule-grid__cell"
+            class="schedule__cell"
             :class="{
-              'schedule-grid__cell--hour': timeSlot.endsWith(':00'),
-              'schedule-grid__cell--quarter': !timeSlot.endsWith(':00'),
+              'schedule__cell--hour': timeSlot.endsWith(':00'),
+              'schedule__cell--quarter': !timeSlot.endsWith(':00'),
             }"
             @mouseover="showMinutes(slotIndex)"
             @mouseleave="hideMinutes()"
@@ -59,7 +61,7 @@
 
 <script>
 import IconCancha from './icons/iconCancha.vue';
-import IconMenu from './icons/iconMenu.vue';
+import IconMenu from './icons/iconAdd.vue';
 
 export default {
   components: {
@@ -115,28 +117,33 @@ export default {
 <style scoped lang="scss">
 $grid-color: #dadce0;
 
-.schedule-grid {
+.schedule {
   width: 100%;
   display: flex;
   flex-direction: column;
   overflow: auto;
+  border-left: 1px solid #c0dec4;
 }
 
-.schedule-grid__header {
+.schedule__header {
   background: #eef6ef;
   display: flex;
-  position: sticky;
+  position: fixed;
   width: 100%;
-  top: 0;
+  top: 4rem;
+  left: 5rem;
   z-index: 10;
   border-bottom: 2px solid $grid-color;
 }
 
-.schedule-grid__menu {
-  width: 4rem;
+.schedule__menu {
+  width: 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.schedule-grid__court {
+.schedule__court {
   display: flex;
   height: 72px;
   text-align: left;
@@ -147,12 +154,13 @@ $grid-color: #dadce0;
   border-left: 1px solid #c0dec4;
 }
 
-.schedule-grid__content {
+.schedule__content {
   display: flex;
+  padding-left: 5rem;
 }
 
-.schedule-grid__times {
-  width: 4rem;
+.schedule__times {
+  width: 5rem;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -160,12 +168,18 @@ $grid-color: #dadce0;
   text-align: right;
 }
 
-.schedule-grid__time {
+.schedule__times,
+.schedule__column {
+  padding: 6rem 0 1rem;
+}
+
+.schedule__time {
   font-size: 10px;
   color: #000;
   // border-top: 1px solid #444;
   height: 1rem;
   line-height: 0rem;
+  padding-right: 1rem;
   display: flex;
   span {
     width: 100%;
@@ -180,63 +194,70 @@ $grid-color: #dadce0;
 }
 
 /* Ocultar los minutos por defecto */
-.schedule-grid__time--hidden {
+.schedule__time--hidden {
   visibility: hidden;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 /* Mostrar solo las horas enteras */
-.schedule-grid__time:not(.schedule-grid__time--hidden) {
+.schedule__time:not(.schedule__time--hidden) {
   visibility: visible;
   opacity: 1;
 }
 
 /* Mostrar minutos al hacer hover en la grilla */
-.schedule-grid__cell:hover
-  ~ .schedule-grid__times
-  .schedule-grid__time--hidden {
+.schedule__cell:hover ~ .schedule__times .schedule__time--hidden {
   visibility: visible;
   opacity: 1;
 }
 
-.schedule-grid__columns {
+.schedule__columns {
   display: flex;
   flex-grow: 1;
 }
 
-.schedule-grid__column {
+.schedule__column {
   min-width: 250px;
   display: flex;
   border-left: 1px solid #969696;
   flex-direction: column;
 }
 
-.schedule-grid__cell {
+.schedule__cell {
   height: 1rem;
   border-top: 1px dotted #ccc;
   transition: background-color 0.2s ease-in-out;
 }
 
-.schedule-grid__cell:hover {
+.schedule__cell:hover {
   background-color: rgba(0, 123, 255, 0.05);
   cursor: pointer;
 }
 
-.schedule-grid__cell:active {
+.schedule__cell:active {
   background-color: rgba(0, 123, 255, 0.1);
 }
 
 /* Horas en punto más resaltadas */
-.schedule-grid__cell--hour {
+.schedule__cell--hour {
   border-top: 1px solid #ccd3cb;
   height: 1rem;
   font-weight: bold;
 }
 
 /* Minutos con borde más sutil */
-// .schedule-grid__cell--quarter {
+// .schedule__cell--quarter {
 //   border-bottom: 1px dashed #ddd;
 //   height: 1rem;
 // }
+.FAB {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: greenyellow;
+  color: green;
+  border-radius: 15px;
+  padding: 0.75rem;
+}
 </style>
