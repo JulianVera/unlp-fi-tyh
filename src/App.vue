@@ -18,16 +18,20 @@ import navComponent from './components/navComponent.vue';
       <div class="flex flex-col">
         <span
           class="flex-col gap-2 flex w-20 h-20 hover:bg-emerald-200 active:bg-emerald-300 items-center justify-center"
-          ><menu-icon :size="32" />
+          ><book-clock-icon :size="24" />
           <span class="text-xs">Agenda</span>
         </span>
         <span
           class="flex-col gap-2 flex w-20 h-20 hover:bg-emerald-200 active:bg-emerald-300 items-center justify-center"
-          ><menu-icon :size="32" /><span class="text-xs">Personas</span></span
+          ><account-group-outline-icon :size="24" /><span class="text-xs"
+            >Personas</span
+          ></span
         >
         <span
           class="flex-col gap-2 flex w-20 h-20 hover:bg-emerald-200 active:bg-emerald-300 items-center justify-center"
-          ><menu-icon :size="32" /><span class="text-xs">Canchas</span></span
+          ><soccer-field-icon :size="32" /><span class="text-xs"
+            >Canchas</span
+          ></span
         >
         <span
           class="flex-col gap-2 flex w-20 h-20 hover:bg-emerald-200 active:bg-emerald-300 items-center justify-center"
