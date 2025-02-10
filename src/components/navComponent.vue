@@ -18,7 +18,7 @@
         <div class="w-full px-3 mb-6 md:mb-0">
           <div class="relative">
             <select
-              class="block appearance-none w-full bg-transparent rounded-full text-gray-700 py-3 px-4 pr-8 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+              class="block appearance-none w-full bg-transparent rounded-full text-gray-700 py-3 px-4 pr-8 leading-tight border focus:outline-none focus:bg-white focus:border-gray-500"
               id="grid-state"
             >
               <option>Septiembre</option>

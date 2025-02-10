@@ -76,6 +76,8 @@ export default {
         { name: 'Cancha 3', type: 'Cancha de ladrillo' },
         { name: 'Cancha 4', type: 'Cancha de paddle' },
         { name: 'Cancha 5', type: 'Cancha de paddle' },
+        { name: 'Cancha 6', type: 'Cancha de ladrillo' },
+        { name: 'Cancha 7', type: 'Cancha de pasto' },
       ],
       timeSlots: [],
       hoveredTimeSlot: null,
@@ -127,26 +129,32 @@ $grid-color: #dadce0;
   border-left: 1px solid #c0dec4;
   overflow-x: auto;
   padding-left: 5rem;
+  height: calc(100vh - 4rem);
 }
 
 .schedule__header {
   background: #eef6ef;
   display: flex;
-  // position: fixed;
+  position: sticky;
+  top: 0;
   width: fit-content;
   // top: 4rem;
   // left: 5rem;
+  padding-left: 5rem;
   z-index: 10;
   border-bottom: 2px solid $grid-color;
 }
 
 .schedule__menu {
   min-width: 5rem;
+  height: 4.5rem;
   display: flex;
+  z-index: 100;
   align-items: center;
   justify-content: center;
-  position: sticky;
-  left: 0;
+  position: fixed;
+  left: 5rem;
+  top: 4rem;
   border-right: 1px solid #ccc;
   background-color: #eef6ef;
 }
@@ -181,7 +189,7 @@ $grid-color: #dadce0;
 
 .schedule__times,
 .schedule__column {
-  padding: 6rem 0 1rem;
+  padding: 3rem 0 1rem;
 }
 
 .schedule__time {
