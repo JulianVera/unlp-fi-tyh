@@ -39,8 +39,8 @@
       <div class="schedule__columns">
         <div
           class="schedule__column"
-          v-for="(court, index) in courts"
-          :key="index"
+          v-for="(court, courtIndex) in courts"
+          :key="courtIndex"
         >
           <div
             v-for="(timeSlot, slotIndex) in timeSlots"
@@ -49,9 +49,12 @@
             :class="{
               'schedule__cell--hour': timeSlot.endsWith(':00'),
               'schedule__cell--quarter': !timeSlot.endsWith(':00'),
+              'schedule__cell--selected': isSelected(courtIndex, slotIndex),
+              'schedule__cell--hover': isHovered(courtIndex, slotIndex), // Asegurarse de pasar courtIndex
             }"
-            @mouseover="showMinutes(slotIndex)"
-            @mouseleave="hideMinutes()"
+            @mousedown="startEvent(courtIndex, slotIndex)"
+            @mouseover="extendEvent(courtIndex, slotIndex)"
+            @mouseup="finalizeEvent()"
           ></div>
         </div>
       </div>
@@ -61,7 +64,7 @@
 
 <script>
 import IconCancha from './icons/iconCancha.vue';
-import IconMenu from './icons/iconAdd.vue';
+import IconMenu from './icons/iconMenu.vue';
 
 export default {
   components: {
@@ -80,7 +83,9 @@ export default {
         { name: 'Cancha 7', type: 'Cancha de pasto' },
       ],
       timeSlots: [],
-      hoveredTimeSlot: null,
+      selectedEvent: null, // Evento en selección
+      events: [], // Eventos guardados
+      isDragging: false,
     };
   },
 
@@ -107,12 +112,55 @@ export default {
       return `${formattedHour}:${minute} ${period}`;
     },
 
-    showMinutes(slotIndex) {
-      this.hoveredTimeSlot = slotIndex;
+    startEvent(courtIndex, slotIndex) {
+      this.selectedEvent = {
+        court: courtIndex,
+        start: slotIndex,
+        end: slotIndex, // Inicialmente, start y end son iguales
+      };
+      this.isDragging = true;
     },
 
-    hideMinutes() {
-      this.hoveredTimeSlot = null;
+    extendEvent(courtIndex, slotIndex) {
+      if (
+        this.isDragging &&
+        this.selectedEvent &&
+        this.selectedEvent.court === courtIndex
+      ) {
+        // Permite extender tanto hacia arriba como hacia abajo
+        this.selectedEvent.start = Math.min(
+          this.selectedEvent.start,
+          slotIndex
+        );
+        this.selectedEvent.end = Math.max(this.selectedEvent.end, slotIndex);
+      }
+    },
+
+    finalizeEvent() {
+      if (this.selectedEvent) {
+        this.events.push({ ...this.selectedEvent });
+        this.selectedEvent = null;
+      }
+      this.isDragging = false;
+    },
+
+    isSelected(courtIndex, slotIndex) {
+      return this.events.some(
+        (event) =>
+          event.court === courtIndex && // Asegurar que es la misma cancha
+          slotIndex >= event.start &&
+          slotIndex <= event.end
+      );
+    },
+
+    isHovered(courtIndex, slotIndex) {
+      return (
+        this.isDragging &&
+        this.selectedEvent &&
+        this.selectedEvent.court === courtIndex && // Asegurar que solo afecta la cancha en la que se selecciona
+        slotIndex >= this.selectedEvent.start &&
+        slotIndex <= this.selectedEvent.end
+      );
     },
   },
 };
@@ -120,26 +168,26 @@ export default {
 
 <style scoped lang="scss">
 $grid-color: #dadce0;
+$border-color: #c0dec4;
+$primary-bg: #eef6ef;
 
 .schedule {
   width: 100%;
+  height: calc(100vh - 4rem);
   display: flex;
   flex-direction: column;
   overflow: auto;
-  border-left: 1px solid #c0dec4;
+  border-left: 1px solid $border-color;
   overflow-x: auto;
   padding-left: 5rem;
-  height: calc(100vh - 4rem);
 }
 
 .schedule__header {
-  background: #eef6ef;
+  background: $primary-bg;
   display: flex;
   position: sticky;
   top: 0;
   width: fit-content;
-  // top: 4rem;
-  // left: 5rem;
   padding-left: 5rem;
   z-index: 10;
   border-bottom: 2px solid $grid-color;
@@ -149,25 +197,25 @@ $grid-color: #dadce0;
   min-width: 5rem;
   height: 4.5rem;
   display: flex;
-  z-index: 100;
   align-items: center;
   justify-content: center;
   position: fixed;
   left: 5rem;
   top: 4rem;
   border-right: 1px solid #ccc;
-  background-color: #eef6ef;
+  background-color: $primary-bg;
+  z-index: 100;
 }
 
 .schedule__court {
   display: flex;
+  align-items: center;
   height: 72px;
-  text-align: left;
   gap: 1rem;
   padding: 0 1rem;
   min-width: 250px;
-  align-items: center;
-  border-right: 1px solid #c0dec4;
+  text-align: left;
+  border-right: 1px solid $border-color;
 }
 
 .schedule__content {
@@ -195,21 +243,14 @@ $grid-color: #dadce0;
 .schedule__time {
   font-size: 10px;
   color: #000;
-  // border-top: 1px solid #444;
   height: 1rem;
   line-height: 0rem;
   padding-right: 1rem;
   display: flex;
+
   span {
     width: 100%;
   }
-  // &:after {
-  //   content: '';
-  //   width: 0.75rem;
-  //   height: 1px;
-  //   background-color: black;
-  //   display: flex;
-  // }
 }
 
 /* Ocultar los minutos por defecto */
@@ -239,37 +280,85 @@ $grid-color: #dadce0;
 .schedule__column {
   min-width: 250px;
   display: flex;
-  border-right: 1px solid #969696;
   flex-direction: column;
+  border-right: 1px solid #969696;
 }
 
 .schedule__cell {
   height: 1rem;
-  border-top: 1px dotted #ccc;
+  border-top: 1px solid #e0e0e0;
   transition: background-color 0.2s ease-in-out;
-}
-
-.schedule__cell:hover {
-  background-color: rgba(0, 123, 255, 0.05);
   cursor: pointer;
 }
 
+.schedule__cell:hover {
+  background-color: greenyellow;
+}
+
 .schedule__cell:active {
-  background-color: rgba(0, 123, 255, 0.1);
+  background-color: greenyellow;
 }
 
 /* Horas en punto más resaltadas */
 .schedule__cell--hour {
-  border-top: 1px solid #ccd3cb;
+  border-top: 1px solid #ccc;
   height: 1rem;
   font-weight: bold;
 }
 
-/* Minutos con borde más sutil */
-// .schedule__cell--quarter {
-//   border-bottom: 1px dashed #ddd;
-//   height: 1rem;
+/* Selección de eventos */
+.schedule__cell--selected {
+  background-color: rgba(172, 255, 47, 0.3);
+  border-radius: 4px;
+  border-right: 2px solid green;
+  border-left: 2px solid green;
+}
+
+.schedule__cell--selected + .schedule__cell--selected {
+  // border-radius: 0;
+  // border-color: transparent;
+  // border-color: blue;
+  // border-width: 0 1px;
+  border-radius: 0;
+  // border-color: transparent;
+  border-width: 0 2px;
+}
+
+/* 🎯 Borde superior solo para la primera celda del grupo seleccionado */
+.schedule__cell:not(.schedule__cell--selected) + .schedule__cell--selected {
+  border-top: 2px solid green;
+  border-radius: 4px 4px 0 0;
+}
+
+/* 🎯 Borde inferior solo para la última celda del grupo seleccionado */
+.schedule__cell--selected:has(
+    + .schedule__cell:not(.schedule__cell--selected)
+  ) {
+  border-bottom: 2px solid green;
+  border-radius: 0 0 4px 4px;
+}
+.schedule__column .schedule__cell--selected:first-of-type {
+  border-radius: 4px 4px 0 0; /* Redondear solo la parte superior */
+  border-top: 2px solid green;
+}
+
+.schedule__column .schedule__cell--selected:last-of-type {
+  border-radius: 0 0 4px 4px; /* Redondear solo la parte inferior */
+  // border-color: red; /* Cambiar color del borde */
+  border-bottom: 2px solid green;
+}
+
+// .schedule__cell--selected:first-child {
+//   border-color: blue;
+//   border-width: 1px 1px 1px 1px;
 // }
+
+/* Hover de selección */
+.schedule__cell--hover {
+  background-color: rgba(172, 255, 47, 0.75);
+  border-color: transparent;
+}
+
 .FAB {
   display: flex;
   align-items: center;
