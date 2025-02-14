@@ -4,7 +4,7 @@ import PeopleTable from '@/components/PeopleTable.vue';
 <template>
   <div class="flex px-4 w-dvw flex-col">
     <div class="flex justify-between items-center">
-      <h1 class="w-full text-2xl px-2 py-4">Settings</h1>
+      <h1 class="w-full text-2xl px-2 py-4">Inventario</h1>
       <button class="FAB">
         <plus-icon :size="32" />
       </button>

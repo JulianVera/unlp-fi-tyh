@@ -1,5 +1,5 @@
 <template>
-  <div class="schedule">
+  <div class="schedule relative">
     <div class="schedule__header">
       <div class="schedule__menu">
         <button class="FAB">
@@ -11,7 +11,7 @@
         v-for="(court, index) in courts"
         :key="index"
       >
-        <IconCancha />
+        <img class="w-16" src="../assets/field-01.svg" alt="product image" />
         <div class="schedule__court-info">
           <span class="font-bold">{{ court.name }}</span>
           <p class="text-xs">{{ court.type }}</p>
@@ -20,7 +20,6 @@
     </div>
 
     <div class="schedule__content">
-      <!-- Columna de horarios -->
       <div class="schedule__times">
         <div
           v-for="(timeSlot, index) in timeSlots"
@@ -35,12 +34,12 @@
         </div>
       </div>
 
-      <!-- Columnas de canchas -->
       <div class="schedule__columns">
         <div
           class="schedule__column"
           v-for="(court, courtIndex) in courts"
           :key="courtIndex"
+          ref="columns"
         >
           <div
             v-for="(timeSlot, slotIndex) in timeSlots"
@@ -49,8 +48,11 @@
             :class="{
               'schedule__cell--hour': timeSlot.endsWith(':00'),
               'schedule__cell--quarter': !timeSlot.endsWith(':00'),
-              'schedule__cell--selected': isSelected(courtIndex, slotIndex),
-              'schedule__cell--hover': isHovered(courtIndex, slotIndex), // Asegurarse de pasar courtIndex
+
+              'schedule__cell--selected':
+                isSelected(courtIndex, slotIndex) ||
+                isCurrentSelection(courtIndex, slotIndex),
+              'schedule__cell--hover': isHovered(courtIndex, slotIndex),
             }"
             @mousedown="startEvent(courtIndex, slotIndex)"
             @mouseover="extendEvent(courtIndex, slotIndex)"
@@ -59,20 +61,34 @@
         </div>
       </div>
     </div>
+    <ModalBooking
+      v-if="showModal"
+      :isOpen="showModal"
+      :modalXPosition="modalXPosition"
+      @close="closeModal"
+      @save="handleSaveEvent"
+    />
   </div>
 </template>
 
 <script>
 import IconCancha from './icons/iconCancha.vue';
 import IconMenu from './icons/iconMenu.vue';
+import ModalBooking from './ModalBooking.vue';
 
 export default {
   components: {
     IconCancha,
     IconMenu,
+    ModalBooking,
   },
   data() {
     return {
+      showModal: false,
+      modalXPosition: 'right-0',
+      selectedColumn: 0,
+      selectedEvent: null,
+      isDragging: false,
       courts: [
         { name: 'Cancha 1', type: 'Cancha de pasto' },
         { name: 'Cancha 2', type: 'Cancha de pasto' },
@@ -83,9 +99,7 @@ export default {
         { name: 'Cancha 7', type: 'Cancha de pasto' },
       ],
       timeSlots: [],
-      selectedEvent: null, // Evento en selección
-      events: [], // Eventos guardados
-      isDragging: false,
+      events: [],
     };
   },
 
@@ -116,7 +130,7 @@ export default {
       this.selectedEvent = {
         court: courtIndex,
         start: slotIndex,
-        end: slotIndex, // Inicialmente, start y end son iguales
+        end: slotIndex,
       };
       this.isDragging = true;
     },
@@ -137,19 +151,52 @@ export default {
     },
 
     finalizeEvent() {
-      if (this.selectedEvent) {
-        this.events.push({ ...this.selectedEvent });
-        this.selectedEvent = null;
-      }
       this.isDragging = false;
+      if (this.selectedEvent) {
+        this.selectedColumn = this.selectedEvent.court;
+        this.calculateModalPosition();
+        this.showModal = true;
+      }
+    },
+
+    calculateModalPosition() {
+      const columnEl = this.$refs.columns[this.selectedColumn];
+      if (columnEl) {
+        const rect = columnEl.getBoundingClientRect();
+        const screenWidth = window.innerWidth;
+        const columnCenter = rect.left + rect.width / 2;
+        this.modalXPosition =
+          columnCenter > screenWidth / 2 ? 'left-24' : 'right-4';
+      }
+    },
+
+    handleSaveEvent(eventData) {
+      if (this.selectedEvent) {
+        this.events.push({ ...this.selectedEvent, ...eventData });
+      }
+      this.closeModal();
+    },
+
+    closeModal() {
+      this.showModal = false;
+      this.selectedEvent = null;
     },
 
     isSelected(courtIndex, slotIndex) {
       return this.events.some(
         (event) =>
-          event.court === courtIndex && // Asegurar que es la misma cancha
+          event.court === courtIndex &&
           slotIndex >= event.start &&
           slotIndex <= event.end
+      );
+    },
+
+    isCurrentSelection(courtIndex, slotIndex) {
+      return (
+        this.selectedEvent &&
+        this.selectedEvent.court === courtIndex &&
+        slotIndex >= this.selectedEvent.start &&
+        slotIndex <= this.selectedEvent.end
       );
     },
 
@@ -157,7 +204,7 @@ export default {
       return (
         this.isDragging &&
         this.selectedEvent &&
-        this.selectedEvent.court === courtIndex && // Asegurar que solo afecta la cancha en la que se selecciona
+        this.selectedEvent.court === courtIndex &&
         slotIndex >= this.selectedEvent.start &&
         slotIndex <= this.selectedEvent.end
       );
@@ -355,5 +402,33 @@ $primary-bg: #eef6ef;
 .schedule__cell--hover {
   background-color: rgba(172, 255, 47, 0.75);
   border-color: transparent;
+}
+
+/* Mantener el estilo de selección */
+.schedule__cell--selected {
+  background-color: rgba(172, 255, 47, 0.3);
+  border-radius: 4px;
+  border-right: 2px solid green;
+  border-left: 2px solid green;
+}
+
+/* Mientras el usuario está arrastrando */
+.schedule__cell--hover {
+  background-color: rgba(172, 255, 47, 0.75);
+  border-color: transparent;
+}
+
+/* 🎯 Borde superior solo para la primera celda del grupo seleccionado */
+.schedule__cell:not(.schedule__cell--selected) + .schedule__cell--selected {
+  border-top: 2px solid green;
+  border-radius: 4px 4px 0 0;
+}
+
+/* 🎯 Borde inferior solo para la última celda del grupo seleccionado */
+.schedule__cell--selected:has(
+    + .schedule__cell:not(.schedule__cell--selected)
+  ) {
+  border-bottom: 2px solid green;
+  border-radius: 0 0 4px 4px;
 }
 </style>
