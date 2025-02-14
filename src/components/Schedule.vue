@@ -177,9 +177,7 @@ $primary-bg: #eef6ef;
   display: flex;
   flex-direction: column;
   overflow: auto;
-  border-left: 1px solid $border-color;
   overflow-x: auto;
-  padding-left: 5rem;
 }
 
 .schedule__header {
@@ -357,15 +355,5 @@ $primary-bg: #eef6ef;
 .schedule__cell--hover {
   background-color: rgba(172, 255, 47, 0.75);
   border-color: transparent;
-}
-
-.FAB {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: greenyellow;
-  color: green;
-  border-radius: 15px;
-  padding: 0.75rem;
 }
 </style>
