@@ -62,7 +62,35 @@
             @mousedown="startEvent(courtIndex, slotIndex)"
             @mouseover="extendEvent(courtIndex, slotIndex)"
             @mouseup="finalizeEvent"
-          ></div>
+          >
+            <div
+              v-if="
+                getEventForCell(courtIndex, slotIndex) &&
+                slotIndex === getEventForCell(courtIndex, slotIndex).start
+              "
+              class="schedule__cell-text"
+            >
+              <strong>{{
+                getEventForCell(courtIndex, slotIndex).profesor
+              }}</strong>
+              :
+              {{
+                getEventForCell(courtIndex, slotIndex).description || 'Reserva'
+              }}
+              <br />
+              {{
+                formatHour(
+                  timeSlots[getEventForCell(courtIndex, slotIndex).start]
+                )
+              }}
+              -
+              {{
+                formatHour(
+                  timeSlots[getEventForCell(courtIndex, slotIndex).end]
+                )
+              }}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -144,7 +172,16 @@ export default {
       }
       return slots;
     },
-
+    getEventForCell(courtIndex, slotIndex) {
+      return (
+        this.events.find(
+          (event) =>
+            event.court === courtIndex &&
+            slotIndex >= event.start &&
+            slotIndex <= event.end
+        ) || null
+      );
+    },
     formatHour(time) {
       let [hour, minute] = time.split(':');
       let hourInt = parseInt(hour, 10);
@@ -206,20 +243,32 @@ export default {
       );
 
       if (this.selectedEvent) {
-        this.events.push({ ...this.selectedEvent, ...eventData });
+        const newEvent = {
+          court: this.selectedEvent.court,
+          start: this.selectedEvent.start,
+          end: this.selectedEvent.end,
+          endTime:
+            this.timeSlots[this.selectedEvent.end] ||
+            this.timeSlots[this.selectedEvent.start], // Agregar el tiempo final
+          profesor: eventData.profesor || 'Sin asignar',
+          description: eventData.description || 'Reserva',
+        };
 
-        console.log(
-          '✅ Evento guardado en events[]:',
-          JSON.stringify(this.events, null, 2)
-        );
-        console.log('🔹 Total eventos ahora:', this.events.length);
+        this.events.push(newEvent);
+        this.closeModal();
+        // this.events.push({ ...this.selectedEvent, ...eventData });
+        // this.closeModal();
+
+        // console.log(
+        //   '✅ Evento guardado en events[]:',
+        //   JSON.stringify(this.events, null, 2)
+        // );
+        // console.log('🔹 Total eventos ahora:', this.events.length);
 
         // 🔥 Esperamos un pequeño tiempo antes de limpiar `selectedEvent` para no perder la selección visual
-        setTimeout(() => {
-          this.selectedEvent = null;
-        }, 300);
-
-        this.closeModal();
+        // setTimeout(() => {
+        //   this.selectedEvent = null;
+        // }, 300);
       } else {
         console.warn('⚠️ No hay evento seleccionado para guardar.');
       }
@@ -399,7 +448,7 @@ $primary-bg: #eef6ef;
 .schedule__cell--hour {
   border-top: 1px solid #ccc;
   height: 1rem;
-  font-weight: bold;
+  // font-weight: bold;
 }
 
 /* Selección de eventos */
@@ -481,5 +530,23 @@ $primary-bg: #eef6ef;
   ) {
   border-bottom: 2px solid green;
   border-radius: 0 0 4px 4px;
+}
+
+.schedule__cell-text {
+  font-size: 14px;
+  color: #165000;
+  text-align: left;
+  padding: 2px 8px;
+  // background-color: rgba(172, 255, 47, 0.3);
+  border-radius: 4px;
+  width: 100%;
+  height: 100%;
+  line-height: 1rem;
+  /* overflow: hidden; */
+  white-space: normal;
+  user-select: none; // Previene selección de texto
+  pointer-events: none; // Evita interacción accidental
+  z-index: 1;
+  position: relative;
 }
 </style>

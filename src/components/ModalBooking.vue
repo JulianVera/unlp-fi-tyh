@@ -1,6 +1,6 @@
 <template>
   <div
-    class="fixed top-40 h-auto w-1/3 bg-white shadow-lg p-6 transition-transform duration-300"
+    class="fixed top-40 h-auto w-1/3 bg-white shadow-lg p-6 transition-transform duration-300 z-10"
     :class="modalXPosition"
   >
     <h2 class="text-xl font-bold mb-4">Crear Nueva Reserva</h2>
