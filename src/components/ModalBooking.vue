@@ -8,29 +8,15 @@
     <form @submit.prevent="submitEvent">
       <div class="mb-4">
         <label class="block text-sm font-medium">Profesor:</label>
-        <input
+        <select
           v-model="form.profesor"
-          type="text"
           class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
-        />
-      </div>
-
-      <div class="mb-4">
-        <label class="block text-sm font-medium">Alumnas:</label>
-        <input
-          v-model="form.alumnas"
-          type="text"
-          class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
-        />
-      </div>
-
-      <div class="mb-4">
-        <label class="block text-sm font-medium">Cliente Particular:</label>
-        <input
-          v-model="form.cliente"
-          type="text"
-          class="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500"
-        />
+        >
+          <option value="">Seleccionar profesor</option>
+          <option v-for="prof in professors" :key="prof.id" :value="prof.name">
+            {{ prof.name }} ({{ prof.specialty }})
+          </option>
+        </select>
       </div>
 
       <div class="flex justify-end space-x-2">
@@ -55,14 +41,13 @@
 <script>
 export default {
   props: {
-    modalXPosition: String, // Recibe "left-0" o "right-0"
+    modalXPosition: String,
+    professors: Array,
   },
   data() {
     return {
       form: {
-        profesor: '',
-        alumnas: '',
-        cliente: '',
+        profesor: '', // Inicializar con cadena vacía
       },
     };
   },
@@ -71,7 +56,8 @@ export default {
       this.$emit('close');
     },
     submitEvent() {
-      this.$emit('save', { ...this.form });
+      console.log('🔹 Enviando evento con profesor:', this.form.profesor);
+      this.$emit('save', { profesor: this.form.profesor || 'Sin asignar' });
       this.closeModal();
     },
   },

@@ -1,17 +1,20 @@
 <template>
   <div class="schedule relative">
+    <!-- HEADER -->
     <div class="schedule__header">
       <div class="schedule__menu">
         <button class="FAB">
           <plus-icon :size="32" />
         </button>
       </div>
+
+      <!-- COURTS -->
       <div
         class="schedule__court"
         v-for="(court, index) in courts"
         :key="index"
       >
-        <img class="w-16" src="../assets/field-01.svg" alt="product image" />
+        <img class="w-16" src="../assets/field-01.svg" alt="Cancha" />
         <div class="schedule__court-info">
           <span class="font-bold">{{ court.name }}</span>
           <p class="text-xs">{{ court.type }}</p>
@@ -19,7 +22,9 @@
       </div>
     </div>
 
+    <!-- CONTENT -->
     <div class="schedule__content">
+      <!-- TIMES -->
       <div class="schedule__times">
         <div
           v-for="(timeSlot, index) in timeSlots"
@@ -27,18 +32,19 @@
           class="schedule__time"
           :class="{
             'schedule__time--hidden': !timeSlot.endsWith(':00'),
-            'schedule__time--hover': isHovered,
+            'schedule__time--hover': isHovered(index), // 🔥 Llamado correcto
           }"
         >
           <span>{{ formatHour(timeSlot) }}</span>
         </div>
       </div>
 
+      <!-- COURT COLUMNS -->
       <div class="schedule__columns">
         <div
-          class="schedule__column"
           v-for="(court, courtIndex) in courts"
           :key="courtIndex"
+          class="schedule__column"
           ref="columns"
         >
           <div
@@ -48,7 +54,6 @@
             :class="{
               'schedule__cell--hour': timeSlot.endsWith(':00'),
               'schedule__cell--quarter': !timeSlot.endsWith(':00'),
-
               'schedule__cell--selected':
                 isSelected(courtIndex, slotIndex) ||
                 isCurrentSelection(courtIndex, slotIndex),
@@ -56,30 +61,29 @@
             }"
             @mousedown="startEvent(courtIndex, slotIndex)"
             @mouseover="extendEvent(courtIndex, slotIndex)"
-            @mouseup="finalizeEvent()"
+            @mouseup="finalizeEvent"
           ></div>
         </div>
       </div>
     </div>
+
+    <!-- MODAL -->
     <ModalBooking
       v-if="showModal"
       :isOpen="showModal"
       :modalXPosition="modalXPosition"
       @close="closeModal"
       @save="handleSaveEvent"
+      :professors="professors"
     />
   </div>
 </template>
 
 <script>
-import IconCancha from './icons/iconCancha.vue';
-import IconMenu from './icons/iconMenu.vue';
 import ModalBooking from './ModalBooking.vue';
 
 export default {
   components: {
-    IconCancha,
-    IconMenu,
     ModalBooking,
   },
   data() {
@@ -87,7 +91,7 @@ export default {
       showModal: false,
       modalXPosition: 'right-0',
       selectedColumn: 0,
-      selectedEvent: null,
+      selectedEvent: null, // Este valor se estaba eliminando en closeModal(), lo corregimos.
       isDragging: false,
       courts: [
         { name: 'Cancha 1', type: 'Cancha de pasto' },
@@ -100,14 +104,37 @@ export default {
       ],
       timeSlots: [],
       events: [],
+      professors: [],
     };
   },
-
-  mounted() {
+  created() {
     this.timeSlots = this.generateTimeSlots();
+    this.fetchProfessors();
+  },
+  watch: {
+    events: {
+      deep: true,
+      handler(newVal) {
+        console.log(
+          '🟢 Eventos actualizados:',
+          JSON.stringify(newVal, null, 2)
+        );
+      },
+    },
   },
 
   methods: {
+    fetchProfessors() {
+      setTimeout(() => {
+        this.professors = [
+          { id: 1, name: 'Juan Pérez', specialty: 'Tenis' },
+          { id: 2, name: 'María Gómez', specialty: 'Paddle' },
+          { id: 3, name: 'Carlos Rodríguez', specialty: 'Tenis y Paddle' },
+          { id: 4, name: 'Ana Fernández', specialty: 'Tenis' },
+          { id: 5, name: 'Luis Ortega', specialty: 'Paddle' },
+        ];
+      }, 1000);
+    },
     generateTimeSlots() {
       let slots = [];
       for (let hour = 7; hour <= 23; hour++) {
@@ -136,12 +163,7 @@ export default {
     },
 
     extendEvent(courtIndex, slotIndex) {
-      if (
-        this.isDragging &&
-        this.selectedEvent &&
-        this.selectedEvent.court === courtIndex
-      ) {
-        // Permite extender tanto hacia arriba como hacia abajo
+      if (this.isDragging && this.selectedEvent?.court === courtIndex) {
         this.selectedEvent.start = Math.min(
           this.selectedEvent.start,
           slotIndex
@@ -152,34 +174,72 @@ export default {
 
     finalizeEvent() {
       this.isDragging = false;
+
       if (this.selectedEvent) {
         this.selectedColumn = this.selectedEvent.court;
+        console.log(
+          '✅ finalizeEvent() llamado, evento listo para modal:',
+          this.selectedEvent
+        );
         this.calculateModalPosition();
         this.showModal = true;
       }
     },
 
     calculateModalPosition() {
+      if (!this.$refs.columns) return;
       const columnEl = this.$refs.columns[this.selectedColumn];
       if (columnEl) {
         const rect = columnEl.getBoundingClientRect();
-        const screenWidth = window.innerWidth;
-        const columnCenter = rect.left + rect.width / 2;
         this.modalXPosition =
-          columnCenter > screenWidth / 2 ? 'left-24' : 'right-4';
+          rect.left + rect.width / 2 > window.innerWidth / 2
+            ? 'left-24'
+            : 'right-4';
       }
     },
 
     handleSaveEvent(eventData) {
+      console.log('🔹 Datos recibidos del modal:', eventData);
+      console.log(
+        '🔹 Evento seleccionado antes de guardar:',
+        this.selectedEvent
+      );
+
       if (this.selectedEvent) {
         this.events.push({ ...this.selectedEvent, ...eventData });
+
+        console.log(
+          '✅ Evento guardado en events[]:',
+          JSON.stringify(this.events, null, 2)
+        );
+        console.log('🔹 Total eventos ahora:', this.events.length);
+
+        // 🔥 Esperamos un pequeño tiempo antes de limpiar `selectedEvent` para no perder la selección visual
+        setTimeout(() => {
+          this.selectedEvent = null;
+        }, 300);
+
+        this.closeModal();
+      } else {
+        console.warn('⚠️ No hay evento seleccionado para guardar.');
       }
-      this.closeModal();
     },
 
     closeModal() {
+      console.log(
+        '📢 Cerrando modal, estado actual de events[]:',
+        JSON.stringify(this.events, null, 2)
+      );
       this.showModal = false;
-      this.selectedEvent = null;
+      // 🔥 NO eliminamos `selectedEvent` aquí para que se mantenga la selección
+    },
+    isCurrentSelection(courtIndex, slotIndex) {
+      return (
+        this.selectedEvent &&
+        this.selectedEvent.court === courtIndex &&
+        slotIndex >= this.selectedEvent.start &&
+        slotIndex <= this.selectedEvent.end
+      );
     },
 
     isSelected(courtIndex, slotIndex) {
@@ -188,15 +248,6 @@ export default {
           event.court === courtIndex &&
           slotIndex >= event.start &&
           slotIndex <= event.end
-      );
-    },
-
-    isCurrentSelection(courtIndex, slotIndex) {
-      return (
-        this.selectedEvent &&
-        this.selectedEvent.court === courtIndex &&
-        slotIndex >= this.selectedEvent.start &&
-        slotIndex <= this.selectedEvent.end
       );
     },
 
